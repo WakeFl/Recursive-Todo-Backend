@@ -6,7 +6,6 @@ import { TodoModule } from './todo/todo.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SubtodoModule } from './subtodo/subtodo.module';
 
 @Module({
   imports: [
@@ -28,7 +27,6 @@ import { SubtodoModule } from './subtodo/subtodo.module';
       }),
       inject: [ConfigService],
     }),
-    SubtodoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

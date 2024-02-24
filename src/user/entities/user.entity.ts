@@ -20,7 +20,7 @@ export class User {
   @Column()
   password: string;
 
-  @OneToMany(() => Todo, (todo) => todo.user, { onDelete: 'CASCADE' })
+  @OneToMany(() => Todo, (todo) => todo.user)
   todos: Todo[];
 
   @CreateDateColumn()
