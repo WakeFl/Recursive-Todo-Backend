@@ -6,12 +6,14 @@ import { TodoModule } from './todo/todo.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LikeModule } from './like/like.module';
 
 @Module({
   imports: [
     UserModule,
     TodoModule,
     AuthModule,
+    LikeModule,
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

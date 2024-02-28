@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateTodoDto } from './dto/create-todo.dto';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 import { Todo } from './entities/todo.entity';
-import { relations } from './relations';
 
 @Injectable()
 export class TodoService {
@@ -18,9 +18,6 @@ export class TodoService {
       user: {
         id: id,
       },
-      parent: {
-        id: +createTodoDto.parentId || null,
-      },
     };
     return await this.todoRepository.save(newTodo);
   }
@@ -28,7 +25,7 @@ export class TodoService {
   async findOne(id: number) {
     const todo = await this.todoRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ['user', 'like'],
     });
 
     if (!todo) throw new NotFoundException('Todo not Found');
@@ -37,39 +34,25 @@ export class TodoService {
   }
 
   async findAll(id: number) {
-    return await this.todoRepository.find({
-      order: {
-        createdAt: 'DESC',
-      },
-      relations: relations,
+    const data = await this.todoRepository.find({
       where: {
         user: { id },
-        isMain: true,
       },
     });
+    const tree = transformArray(data);
+    return tree;
   }
 
   async remove(id: number) {
     const todo = await this.todoRepository.findOne({
       where: { id },
-      relations: relations,
     });
 
     if (!todo) throw new NotFoundException('Todo not found');
 
-    await this.recursiveDelete(todo);
+    await this.deleteChildren(id);
 
     return await this.todoRepository.delete(id);
-  }
-
-  async recursiveDelete(todo: Todo) {
-    if (todo.children) {
-      for (const child of todo.children) {
-        await this.recursiveDelete(child);
-      }
-    }
-
-    await this.todoRepository.delete(todo.id);
   }
 
   async update(createTodoDto: CreateTodoDto, id: number) {
@@ -80,4 +63,45 @@ export class TodoService {
     if (!todo) throw new NotFoundException('Todo not found');
     return await this.todoRepository.update(id, createTodoDto);
   }
+
+  async deleteChildren(parentId: number) {
+    const children = await this.todoRepository.find({
+      where: { parentId },
+    });
+
+    for (const child of children) {
+      await this.deleteChildren(child.id);
+      await this.todoRepository.delete(child.id);
+    }
+  }
+
+  async like(updateTodoDto: UpdateTodoDto, id: number) {
+    const todo = await this.todoRepository.findOne({
+      where: { id },
+    });
+
+    if (!todo) throw new NotFoundException('Todo not found');
+    return await this.todoRepository.update(id, updateTodoDto);
+  }
+}
+
+function transformArray(inputArray) {
+  const idMap = {};
+
+  inputArray.forEach((obj) => {
+    idMap[obj.id] = { ...obj, children: [] };
+  });
+
+  inputArray.forEach((obj) => {
+    if (obj.parentId !== null) {
+      const parent = idMap[obj.parentId];
+      if (parent) {
+        parent.children.push(idMap[obj.id]);
+      }
+    }
+  });
+
+  return inputArray
+    .filter((obj) => obj.parentId === null)
+    .map((obj) => idMap[obj.id]);
 }

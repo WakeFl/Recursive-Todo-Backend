@@ -14,6 +14,7 @@ import {
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 
 @Controller('todo')
 export class TodoController {
@@ -41,7 +42,7 @@ export class TodoController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll(@Req() req) {
+  findUserAllTodos(@Req() req) {
     return this.todoService.findAll(+req.user.id);
   }
 
@@ -49,5 +50,12 @@ export class TodoController {
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.todoService.remove(+id);
+  }
+
+  @Patch('like')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe())
+  like(@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto) {
+    return this.todoService.like(updateTodoDto, +id);
   }
 }

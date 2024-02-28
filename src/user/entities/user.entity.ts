@@ -1,9 +1,12 @@
 import { todo } from 'node:test';
+import { Like } from 'src/like/entities/like.entity';
 import { Todo } from 'src/todo/entities/todo.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -20,7 +23,7 @@ export class User {
   @Column()
   password: string;
 
-  @OneToMany(() => Todo, (todo) => todo.user)
+  @OneToMany(() => Todo, (todo) => todo.user, { eager: true })
   todos: Todo[];
 
   @CreateDateColumn()
@@ -28,4 +31,8 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
+  role: any;
 }

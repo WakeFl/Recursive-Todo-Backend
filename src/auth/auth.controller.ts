@@ -18,4 +18,10 @@ export class AuthController {
   getProfile(@Request() req) {
     return req.user;
   }
+
+  @Get('refresh')
+  refreshToken(@Request() req) {
+    const refreshToken = req.headers['authorization'].slice('Bearer '.length);
+    return this.authService.refreshTokens(refreshToken);
+  }
 }

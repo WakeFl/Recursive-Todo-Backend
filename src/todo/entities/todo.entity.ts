@@ -1,3 +1,4 @@
+import { Like } from 'src/like/entities/like.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -15,11 +16,11 @@ export class Todo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
-  isMain: boolean;
-
   @Column()
   todo: string;
+
+  @Column({ nullable: true })
+  parentId: number;
 
   @ManyToOne(() => User, (user) => user.todos)
   @JoinColumn({ name: 'user_id' })
@@ -31,12 +32,6 @@ export class Todo {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Todo, (todo) => todo.children)
-  parent: Todo;
-
-  @OneToMany(() => Todo, (todo) => todo.parent, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  children: Todo[];
+  @OneToMany(() => Like, (like) => like.todo)
+  likes: Like[];
 }

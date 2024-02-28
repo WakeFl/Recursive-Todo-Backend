@@ -23,4 +23,14 @@ export class UserController {
   findOne(email: string) {
     return this.userService.findOne(email);
   }
+
+  @Get('all')
+  findAll() {
+    return this.userService.findAllUsersWithSortedTodos();
+  }
+
+  @Get('statistic')
+  getStatistic() {
+    return this.userService.findAllUsersWithLikesCounts();
+  }
 }

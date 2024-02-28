@@ -6,14 +6,9 @@ export class CreateTodoDto {
   @IsNotEmpty()
   todo: string;
 
-  isMain: boolean;
-
   @IsOptional()
   user?: User;
 
   @IsOptional()
   parentId: number;
-
-  @IsOptional()
-  parent: Todo;
 }
