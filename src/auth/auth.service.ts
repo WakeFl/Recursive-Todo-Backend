@@ -22,14 +22,14 @@ export class AuthService {
   async generateTokens(user: IUser) {
     const tokens = {
       token: await this.jwtService.signAsync(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, role: user.role },
         {
           expiresIn: '15m',
           secret: process.env.JWT_SECRET,
         },
       ),
       refreshToken: await this.jwtService.signAsync(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, role: user.role },
         {
           expiresIn: '7d',
           secret: process.env.JWT_REFRESH_SECRET,
@@ -49,10 +49,11 @@ export class AuthService {
   }
 
   async login(user: IUser) {
-    const { id, email } = user;
+    const { id, email, role } = user;
     return {
       id,
       email,
+      role,
       ...(await this.generateTokens(user)),
     };
   }
@@ -61,16 +62,25 @@ export class AuthService {
     const decodedToken = this.jwtService.verify(token, {
       secret: process.env.JWT_REFRESH_SECRET,
     });
-    const email = (decodedToken as any).email;
+    const mail = (decodedToken as any).email;
 
-    const user = await this.userService.findOne(email);
+    const user = await this.userService.findOne(mail);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return ({ token } = await this.generateTokens({
-      id: `${user.id}`,
-      email: user.email,
-    }));
+
+    const { role, email, id } = user;
+
+    return {
+      role,
+      email,
+      id,
+      ...(await this.generateTokens({
+        id: `${user.id}`,
+        email: user.email,
+        role: user.role,
+      })),
+    };
   }
 }

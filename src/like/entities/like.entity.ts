@@ -7,11 +7,17 @@ export class Like {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.likes, { cascade: true })
+  @ManyToOne(() => User, (user) => user.likes, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => Todo, (todo) => todo.likes, { cascade: true })
+  @ManyToOne(() => Todo, (todo) => todo.likes, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'todo_id' })
   todo: Todo;
 }

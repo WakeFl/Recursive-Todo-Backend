@@ -1,4 +1,11 @@
-import { Controller, Post, UseGuards, Request, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Request,
+  Get,
+  BadRequestException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -22,6 +29,8 @@ export class AuthController {
   @Get('refresh')
   refreshToken(@Request() req) {
     const refreshToken = req.headers['authorization'].slice('Bearer '.length);
-    return this.authService.refreshTokens(refreshToken);
+    if (refreshToken) {
+      return this.authService.refreshTokens(refreshToken);
+    }
   }
 }

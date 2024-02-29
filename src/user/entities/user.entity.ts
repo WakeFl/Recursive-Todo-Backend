@@ -1,16 +1,14 @@
-import { todo } from 'node:test';
 import { Like } from 'src/like/entities/like.entity';
 import { Todo } from 'src/todo/entities/todo.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Role } from './model';
 
 @Entity()
 export class User {
@@ -23,6 +21,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ type: 'enum', enum: Role, default: Role.USER })
+  role: Role;
+
   @OneToMany(() => Todo, (todo) => todo.user, { eager: true })
   todos: Todo[];
 
@@ -34,5 +35,4 @@ export class User {
 
   @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
-  role: any;
 }

@@ -25,7 +25,7 @@ export class TodoService {
   async findOne(id: number) {
     const todo = await this.todoRepository.findOne({
       where: { id },
-      relations: ['user', 'like'],
+      relations: ['user'],
     });
 
     if (!todo) throw new NotFoundException('Todo not Found');

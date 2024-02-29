@@ -15,6 +15,10 @@ import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/user/entities/model';
+import { IsCreatorGuard } from './guards/is-creator.guard';
 
 @Controller('todo')
 export class TodoController {
@@ -28,7 +32,7 @@ export class TodoController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, IsCreatorGuard)
   @UsePipes(new ValidationPipe())
   update(@Param('id') id: string, @Body() createTodoDto: CreateTodoDto) {
     return this.todoService.update(createTodoDto, +id);
@@ -46,8 +50,9 @@ export class TodoController {
     return this.todoService.findAll(+req.user.id);
   }
 
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   remove(@Param('id') id: string) {
     return this.todoService.remove(+id);
   }

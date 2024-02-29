@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -7,15 +11,12 @@ import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { Todo } from 'src/todo/entities/todo.entity';
 import { Like } from 'src/like/entities/like.entity';
+import { Role } from './entities/model';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
-    @InjectRepository(Like)
-    private readonly likeRepository: Repository<Like>,
-    @InjectRepository(Todo)
-    private readonly todoRepository: Repository<Todo>,
     private jwtService: JwtService,
   ) {}
 
@@ -89,6 +90,7 @@ export class UserService {
         'user.email',
         'user.id',
         'user.createdAt',
+        'user.role',
         'COUNT(DISTINCT todos.id) AS todoCount',
         'COUNT(like.id) AS likeCount',
       ])
@@ -97,5 +99,27 @@ export class UserService {
       .groupBy('user.id')
       .orderBy('user.createdAt', 'DESC')
       .getRawMany();
+  }
+
+  async toggleAdmin(email: string) {
+    const existingUser = await this.userRepository.findOne({
+      where: {
+        email: email,
+      },
+    });
+    if (!existingUser) throw new NotFoundException('User not found');
+
+    if (existingUser.role === Role.SUPER_ADMIN)
+      throw new BadRequestException('Is already BOSS');
+
+    if (existingUser.role === Role.ADMIN) {
+      return await this.userRepository.update(existingUser.id, {
+        role: Role.USER,
+      });
+    } else if (existingUser.role === Role.USER) {
+      return await this.userRepository.update(existingUser.id, {
+        role: Role.ADMIN,
+      });
+    }
   }
 }
